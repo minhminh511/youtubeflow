@@ -1,0 +1,42 @@
+"use client";
+
+import { useState } from "react";
+import { ArrowDownToLine, ArrowRight, ArrowUpRight, Check, CheckCircle2, Compass, Download, ExternalLink, Info, Loader2, RefreshCw, Share, ShieldCheck, Smartphone, SquarePlus, WifiOff, X } from "lucide-react";
+import { BrandMark, CopyButton, Modal } from "@/components/ui";
+import type { PwaRuntime } from "@/lib/use-pwa";
+
+export function InstallBanner({ pwa, onOpen }: { pwa: PwaRuntime; onOpen: () => void }) {
+  if (!pwa.ready || pwa.standalone || pwa.dismissed) return null;
+  return <div className="pwa-install-banner"><button className="pwa-banner-content" onClick={onOpen} aria-label="Thêm TubeFlow vào màn hình chính"><BrandMark /><span><strong>TubeFlow, ngay trên màn hình chính</strong><small>Một chạm. Cả không gian sáng tạo.</small></span><ArrowDownToLine size={19} /></button><button className="pwa-banner-dismiss" aria-label="Ẩn gợi ý cài đặt trong 7 ngày" onClick={pwa.dismissInstall}><X size={15} /></button></div>;
+}
+
+export function ConnectivityNotice({ online }: { online: boolean }) {
+  if (online) return null;
+  return <div className="pwa-offline-notice" role="status"><WifiOff size={17} /><div><strong>Bạn đang ngoại tuyến</strong><span>Kết nối mạng để lưu nội dung. Thay đổi chưa được gửi lên máy chủ.</span></div></div>;
+}
+
+export function PwaSettingsCard({ pwa, onInstall, onUpdate }: { pwa: PwaRuntime; onInstall: () => void; onUpdate: () => void }) {
+  return <section className="card settings-section settings-full pwa-settings-card"><div className="pwa-settings-main"><BrandMark /><div><span className="pwa-settings-label">ỨNG DỤNG CỦA BẠN</span><h2>TubeFlow trên màn hình chính</h2><p>{pwa.standalone ? "Bạn đang dùng giao diện ứng dụng, không có thanh địa chỉ trình duyệt." : "Mở nhanh trên iPhone, với thanh điều hướng thuận tay và giao diện toàn màn hình."}</p><span className={`pwa-mode-badge ${pwa.standalone ? "installed" : ""}`}>{pwa.standalone ? <CheckCircle2 size={13} /> : <Smartphone size={13} />}{pwa.standalone ? "Đang mở như ứng dụng" : "Đang mở trong trình duyệt"}</span></div></div><div className="pwa-settings-actions"><button className="button button-secondary" onClick={onInstall}>{pwa.standalone ? <Info size={15} /> : <ArrowDownToLine size={15} />}{pwa.standalone ? "Thông tin ứng dụng" : "Thêm vào màn hình chính"}</button>{pwa.updateAvailable && <button className="button button-primary" onClick={onUpdate}><RefreshCw size={15} />Cập nhật mới</button>}{pwa.workerStatus === "error" && <p className="field-hint">Trang ngoại tuyến chưa sẵn sàng. Bạn vẫn có thể dùng ứng dụng khi có mạng.</p>}</div></section>;
+}
+
+export function PwaInstallDialog({ open, onClose, pwa, onSettings }: { open: boolean; onClose: () => void; pwa: PwaRuntime; onSettings: () => void }) {
+  const [guide, setGuide] = useState<"iphone" | "other">("iphone");
+  return <Modal open={open} onClose={onClose} title={pwa.standalone ? "Không gian của bạn, luôn ở đây" : "Thêm TubeFlow vào màn hình chính"} description={pwa.standalone ? "TubeFlow đang hoạt động ở chế độ ứng dụng." : "Trải nghiệm gọn gàng hơn. Không cần App Store."}>
+    <div className="pwa-install-hero"><img src="/apple-touch-icon.png" width="76" height="76" alt="Biểu tượng ứng dụng TubeFlow" /><h3>TubeFlow<span>Creator workspace</span></h3><div className="pwa-benefits"><span><Check size={12} />Mở bằng một chạm</span><span><Check size={12} />Không gian tập trung</span></div></div>
+    {pwa.standalone ? <div className="pwa-installed-message"><CheckCircle2 size={24} /><div><strong>Đã sẵn sàng trên màn hình chính</strong><p>Dùng thanh tab phía dưới để chuyển nhanh giữa kế hoạch, ý tưởng và kênh. Nút + giúp bạn tạo nội dung mới.</p></div></div> : <>
+      {pwa.embedded && <div className="pwa-embedded-notice"><ExternalLink size={17} /><div><strong>Đang xem trong khung preview?</strong><p>Hãy mở ứng dụng trong một tab Safari riêng trước khi thêm vào màn hình chính.</p><a className="text-button" href={`${pwa.origin}/`} target="_blank" rel="noreferrer">Mở bản ứng dụng đầy đủ <ArrowUpRight size={14} /></a></div></div>}
+      {pwa.canInstall && !pwa.isIOS && <button className="button button-primary full-width pwa-native-install" onClick={pwa.install} disabled={pwa.installing}>{pwa.installing ? <Loader2 size={17} className="spin" /> : <Download size={17} />}Cài ứng dụng bằng trình duyệt</button>}
+      {pwa.installMessage && <p className="pwa-install-message" role="status">{pwa.installMessage}</p>}
+      <div className="pwa-guide-tabs" role="group" aria-label="Hướng dẫn theo thiết bị"><button aria-pressed={guide === "iphone"} className={guide === "iphone" ? "active" : ""} onClick={() => setGuide("iphone")}><Smartphone size={15} />iPhone / iPad</button><button aria-pressed={guide === "other"} className={guide === "other" ? "active" : ""} onClick={() => setGuide("other")}>Thiết bị khác</button></div>
+      {guide === "iphone" ? <ol className="pwa-install-steps"><li><span className="pwa-step-icon"><Compass size={21} /></span><div><small>BƯỚC 01</small><strong>Mở TubeFlow bằng Safari</strong><p>Dùng URL ứng dụng, không dùng trang xem trước trong Zalo, Facebook hoặc khung trò chuyện.</p></div></li><li><span className="pwa-step-icon"><Share size={21} /></span><div><small>BƯỚC 02</small><strong>Chạm nút Chia sẻ</strong><p>Biểu tượng hình vuông có mũi tên hướng lên. Tùy phiên bản Safari, mở menu trang <b>⋯</b> rồi chọn <b>Chia sẻ</b>.</p></div></li><li><span className="pwa-step-icon"><SquarePlus size={21} /></span><div><small>BƯỚC 03</small><strong>Thêm vào Màn hình chính</strong><p>Cuộn xuống chọn <b>Thêm vào Màn hình chính</b> (Add to Home Screen). Bật <b>Mở dưới dạng ứng dụng web</b> nếu có, rồi chạm <b>Thêm</b>.</p></div></li></ol> : <ol className="pwa-install-steps"><li><span className="pwa-step-icon"><Compass size={21} /></span><div><small>BƯỚC 01</small><strong>Mở ứng dụng bằng Chrome hoặc Edge</strong><p>Dùng URL HTTPS của ứng dụng. Trình duyệt tích hợp trong ứng dụng khác có thể không hỗ trợ cài đặt.</p></div></li><li><span className="pwa-step-icon"><ArrowDownToLine size={21} /></span><div><small>BƯỚC 02</small><strong>Chọn Cài đặt ứng dụng</strong><p>Dùng nút cài ở trên nếu có, hoặc mở menu trình duyệt → <b>Cài đặt ứng dụng / Thêm vào màn hình chính</b>, rồi xác nhận.</p></div></li></ol>}
+      {pwa.origin && <div className="pwa-address"><span>URL để mở trên điện thoại</span><div><code>{pwa.origin}</code><CopyButton compact text={pwa.origin} label="Sao chép URL cài đặt ứng dụng" /></div></div>}
+      <p className="pwa-install-footnote">Trên iPhone, website không thể tự mở hộp “Thêm vào Màn hình chính”. Bạn cần xác nhận trong menu Safari. Nếu không thấy mục này, chọn <b>Sửa tác vụ</b> ở cuối danh sách Chia sẻ.</p>
+    </>}
+    <details className="pwa-data-note"><summary><ShieldCheck size={15} />Dữ liệu và kết nối mạng</summary><p>Kế hoạch được lưu tại máy chủ và nhận diện bằng cookie của không gian. Từ iOS 17.2, cookie được sao chép khi thêm ứng dụng; sau đó Safari và ứng dụng có vùng lưu trữ riêng. Trên phiên bản cũ hoặc sau khi xóa dữ liệu, bạn có thể thấy một không gian khác.</p><p>Nên xuất một bản sao kế hoạch trước khi cài lại hoặc xóa cookie. Ứng dụng chưa có tài khoản đồng bộ nhiều thiết bị. Lưu nội dung và đọc YouTube cần mạng; chế độ ngoại tuyến chỉ có màn hình thông báo an toàn.</p><button className="text-button" onClick={() => { onClose(); onSettings(); }}>Mở cài đặt để xuất dữ liệu <ArrowRight size={14} /></button></details>
+    <div className="modal-actions pwa-install-actions"><button className="button button-primary full-width" onClick={onClose}>{pwa.standalone ? "Tiếp tục sáng tạo" : "Đã hiểu, tôi sẽ thêm bằng trình duyệt"}<Check size={16} /></button></div>
+  </Modal>;
+}
+
+export function PwaUpdateDialog({ open, onClose, onConfirm }: { open: boolean; onClose: () => void; onConfirm: () => void }) {
+  return <Modal open={open} onClose={onClose} title="Sẵn sàng cho một phiên bản mới" description="Làm mới ứng dụng để nhận các cải tiến mới nhất."><div className="pwa-update-explanation"><RefreshCw size={24} /><p>Hãy lưu nội dung đang nhập trước khi cập nhật. Kế hoạch đã lưu trên máy chủ vẫn được giữ nguyên, nhưng phần chưa lưu sẽ mất khi tải lại.</p></div><div className="modal-actions"><button className="button button-secondary" onClick={onClose}>Để sau</button><button className="button button-primary" onClick={onConfirm}><RefreshCw size={15} />Đã lưu, cập nhật ngay</button></div></Modal>;
+}

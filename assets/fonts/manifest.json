@@ -1,0 +1,13 @@
+{
+  "license": "OFL.txt",
+  "fonts": [
+    {
+      "name": "inter-latin.woff2",
+      "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62"
+    },
+    {
+      "name": "inter-vietnamese.woff2",
+      "sha256": "5c66f9e07e90c6d4ac4922cc68d60de26c17b1858e677fb5e603fce3952b3ff2"
+    }
+  ]
+}
